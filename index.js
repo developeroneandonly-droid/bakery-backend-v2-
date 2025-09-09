@@ -22,6 +22,11 @@ mongoose.connect(process.env.MONGO_URI) // replace hardcoded URI with env
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("❌ MongoDB connection error:", err));
 
+// Root route
+app.get('/', (req, res) => {
+  res.send('Server is running ✅');
+});
+
 // --- Schema ---
 const feedbackSchema = new mongoose.Schema({
   name: String,
