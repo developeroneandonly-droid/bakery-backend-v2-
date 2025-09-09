@@ -18,13 +18,13 @@ app.use(cors({
 app.use(express.json());
 
 // --- MongoDB Connection ---
-mongoose.connect(process.env.MONGO_URI) // replace hardcoded URI with env
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("❌ MongoDB connection error:", err));
 
-// Root route
+// --- Root route for Render health check ---
 app.get('/', (req, res) => {
-  res.send('Server is running ✅');
+  res.send('🍰 Bakery Backend is running!');  // <- updated
 });
 
 // --- Schema ---
@@ -99,6 +99,11 @@ app.delete("/delete/:id", async (req, res) => {
 // --- Serve Admin Panel ---
 app.get("/admin", (req, res) => {
   res.send(`... your existing HTML ...`);
+});
+
+// --- Catch-all route for undefined paths ---
+app.all('*', (req, res) => {
+  res.status(404).send('❌ Route not found on backend');
 });
 
 // --- Server ---
