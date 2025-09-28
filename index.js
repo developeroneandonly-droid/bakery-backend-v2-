@@ -1,15 +1,18 @@
+// --- Server Setup ---
 const express = require("express");
+const app = express();
 const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config(); // ✅ env support
+const path = require("path");
+require('dotenv').config();
+console.log("DEBUG: MONGO_URI = mongodb+srv://myadmin:mypassword123@cluster0.qfkzt8n.mongodb.net/MrBackery?retryWrites=true&w=majority&appName=Cluster0", process.env.MONGO_URI);
 
-const app = express();
 
-// ✅ Allow only Netlify + Localhost
+// ✅ CORS setup
 app.use(cors({
   origin: [
-    "https://newbakeryy.netlify.app", // production (Netlify)
-    "http://localhost:3000"           // local testing (React/Frontend)
+    "https://gkpetshopandaquarium.netlify.app", // ✅ correct production frontend
+    "http://localhost:3000"            // local frontend
   ],
   methods: ["GET", "POST", "PATCH", "DELETE"],
   credentials: true
@@ -22,12 +25,12 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("❌ MongoDB connection error:", err));
 
-// --- Root route for Render health check ---
+// --- Root route for health check ---
 app.get('/', (req, res) => {
-  res.send('🍰 Bakery Backend is running!');  // <- updated
+  res.send('🍰 Bakery Backend is running!');
 });
 
-// --- Schema ---
+// --- Feedback Schema ---
 const feedbackSchema = new mongoose.Schema({
   name: String,
   email: String,
@@ -37,8 +40,7 @@ const feedbackSchema = new mongoose.Schema({
 });
 const Feedback = mongoose.model("Feedback", feedbackSchema);
 
-// --- API routes ---
-
+// --- API Routes ---
 // Save feedback
 app.post("/feedback", async (req, res) => {
   try {
@@ -60,7 +62,7 @@ app.get("/feedback", async (req, res) => {
   }
 });
 
-// Get only approved feedbacks
+// Get approved feedbacks
 app.get("/feedback/approved", async (req, res) => {
   try {
     const approvedFeedbacks = await Feedback.find({ status: "approved" });
@@ -101,11 +103,13 @@ app.get("/admin", (req, res) => {
   res.send(`... your existing HTML ...`);
 });
 
-// --- Catch-all route for undefined paths ---
-app.all('*', (req, res) => {
-  res.status(404).send('❌ Route not found on backend');
-});
+// --- Serve Frontend Static Files ---
+app.use(express.static(path.join(__dirname, "frontend"))); 
+// ✅ Just this is enough for HTML/CSS projects
+// ❌ Don't use React-style catch-all route
 
 // --- Server ---
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+
