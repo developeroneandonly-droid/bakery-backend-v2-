@@ -5,14 +5,14 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
 require('dotenv').config();
-console.log("DEBUG: MONGO_URI = mongodb+srv://myadmin:mypassword123@cluster0.qfkzt8n.mongodb.net/MrBackery?retryWrites=true&w=majority&appName=Cluster0", process.env.MONGO_URI);
 
+console.log("DEBUG: MONGO_URI = mongodb+srv://myadmin:mypassword123@cluster0.qfkzt8n.mongodb.net/MrBackery?retryWrites=true&w=majority&appName=Cluster0", process.env.MONGO_URI);
 
 // ✅ CORS setup
 app.use(cors({
   origin: [
     "https://gkpetshopandaquarium.netlify.app", // ✅ correct production frontend
-    "http://localhost:3000"            // local frontend
+    "http://localhost:3000"                     // local frontend
   ],
   methods: ["GET", "POST", "PATCH", "DELETE"],
   credentials: true
@@ -44,11 +44,16 @@ const Feedback = mongoose.model("Feedback", feedbackSchema);
 // Save feedback
 app.post("/feedback", async (req, res) => {
   try {
+    console.log("📥 Incoming feedback request:", req.body); // log request body
+
     const newFeedback = new Feedback(req.body);
     await newFeedback.save();
+
+    console.log("✅ Feedback saved:", newFeedback); // log success
     res.status(201).json({ message: "Feedback saved successfully!" });
   } catch (error) {
-    res.status(500).json({ error: "Something went wrong" });
+    console.error("❌ Error saving feedback:", error.message, error.stack); // log error details
+    res.status(500).json({ error: "Something went wrong while saving feedback" });
   }
 });
 
@@ -58,6 +63,7 @@ app.get("/feedback", async (req, res) => {
     const feedbacks = await Feedback.find();
     res.json(feedbacks);
   } catch (error) {
+    console.error("❌ Error fetching feedbacks:", error.message);
     res.status(500).json({ error: "Failed to fetch feedbacks" });
   }
 });
@@ -68,6 +74,7 @@ app.get("/feedback/approved", async (req, res) => {
     const approvedFeedbacks = await Feedback.find({ status: "approved" });
     res.json(approvedFeedbacks);
   } catch (error) {
+    console.error("❌ Error fetching approved feedbacks:", error.message);
     res.status(500).json({ error: "Failed to fetch approved feedbacks" });
   }
 });
@@ -83,6 +90,7 @@ app.patch("/approve/:id", async (req, res) => {
     if (!feedback) return res.status(404).json({ message: "Feedback not found" });
     res.json(feedback);
   } catch (error) {
+    console.error("❌ Error approving feedback:", error.message);
     res.status(500).json({ error: "Failed to approve feedback" });
   }
 });
@@ -94,6 +102,7 @@ app.delete("/delete/:id", async (req, res) => {
     if (!deleted) return res.status(404).json({ message: "Feedback not found" });
     res.json({ message: "Feedback deleted successfully" });
   } catch (error) {
+    console.error("❌ Error deleting feedback:", error.message);
     res.status(500).json({ error: "Failed to delete feedback" });
   }
 });
@@ -111,5 +120,3 @@ app.use(express.static(path.join(__dirname, "frontend")));
 // --- Server ---
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
-
